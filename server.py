@@ -1,5 +1,5 @@
 import socket
-from _thread import *
+from _thread import start_new_thread
 import sys
 
 server = '192.168.0.25'  # My IP address
