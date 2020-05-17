@@ -1,6 +1,8 @@
+import pickle
 import socket
 from _thread import start_new_thread
-import sys
+from player import Player
+
 
 server = '192.168.0.25'  # My IP address
 port = 5555
@@ -14,40 +16,32 @@ except socket.error as e:
 socket.listen(2)
 print('Waiting for connections, Server started')
 
-
-def read_position(string):
-    string = string.split(',')
-    return int(string[0]), int(string[1])
-
-
-def make_position(tuple):
-    return str(tuple[0]) + ',' + str(tuple[1])
-
-
-positions = [(0, 0), (100, 100)]
+player1 = Player(0, 0, 50, 50, (255, 0, 0))
+player2 = Player(100, 100, 50, 50, (0, 0, 255))
+players = [player1, player2]
 
 
 def threaded_client(connection, player):
-    connection.send(str.encode(make_position(positions[player])))
+    connection.send(pickle.dumps(players[player]))
     reply = ''
     while True:
         try:
-            data = read_position(connection.recv(2048).decode())
-            positions[player] = data
+            data = pickle.loads(connection.recv(2048))
+            players[player] = data
 
             if not data:
                 print('Disconnected')
                 break
             else:
                 if player == 1:
-                    reply = positions[0]
+                    reply = players[0]
                 else:
-                    reply = positions[1]
+                    reply = players[1]
 
                 print(f'Received: {data}')
                 print(f'Sending: {reply}')
 
-            connection.sendall(str.encode(make_position(reply)))
+            connection.sendall(pickle.dumps(reply))
         except Exception as e:
             print(e)
             break
