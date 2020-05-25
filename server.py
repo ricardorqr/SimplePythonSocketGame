@@ -1,36 +1,37 @@
-import pickle
 import socket
 from _thread import start_new_thread
 from player import Player
+import pickle
 
 
-server = '192.168.0.25'  # My IP address
-port = 5555
-socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+current_player = 0
+IP = ""
+PORT = 5555
 
 try:
-    socket.bind((server, port))
-except socket.error as e:
-    print(e)
+    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socket.bind((IP, PORT))
+    socket.listen()
+except Exception as e:
+    str(e)
 
-socket.listen(2)
-print('Waiting for connections, Server started')
+print("Waiting for a connection, Server Started")
 
 player1 = Player(0, 0, 50, 50, (255, 0, 0))
-player2 = Player(100, 100, 50, 50, (0, 0, 255))
+player2 = Player(0, 0, 50, 50, (0, 0, 255))
 players = [player1, player2]
 
 
-def threaded_client(connection, player):
-    connection.send(pickle.dumps(players[player]))
-    reply = ''
+def thread_client(conn, player):
+    conn.send(pickle.dumps(players[player]))
+    reply = ""
     while True:
         try:
-            data = pickle.loads(connection.recv(2048))
+            data = pickle.loads(conn.recv(2048))
             players[player] = data
 
             if not data:
-                print('Disconnected')
+                print("Disconnected")
                 break
             else:
                 if player == 1:
@@ -38,23 +39,21 @@ def threaded_client(connection, player):
                 else:
                     reply = players[1]
 
-                print(f'Received: {data}')
-                print(f'Sending: {reply}')
+                print("Received: ", data)
+                print("Sending : ", reply)
 
-            connection.sendall(pickle.dumps(reply))
+            conn.sendall(pickle.dumps(reply))
         except Exception as e:
-            print(e)
+            str(e)
             break
 
-    print('Lost connection')
-    connection.close()
+    print("Lost connection")
+    conn.close()
 
-
-current_player = 0
 
 while True:
     connection, address = socket.accept()
-    print(f'Connected to: {address}')
+    print("Connected to:", address)
 
-    start_new_thread(threaded_client, (connection, current_player))
+    start_new_thread(thread_client, (connection, current_player))
     current_player += 1
