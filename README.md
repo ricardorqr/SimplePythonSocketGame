@@ -1,5 +1,5 @@
 # SimplePythonSocketGame
-Simle Python Online Game using sockets and Pygame
+Simple Python Online Game using sockets and Pygame
 
-Totorials:
+Tutorials:
 - https://techwithtim.net/tutorials/python-online-game-tutorial/client/
